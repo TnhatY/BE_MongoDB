@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách Video</title>
+</head>
+
+<body>
+    <h2>Danh sách Video</h2>
+    <button><a href="/addVideo">Thêm video</a></button>
+
+    <table border="1">
+        <tr>
+            <th>Tiêu đề</th>
+            <th>Ảnh</th>
+            <th>Lượt xem</th>
+            <th>Mô tả</th>
+            <th>Trạng thái</th>
+            <th>Category</th>
+        </tr>
+        <% listVideo.forEach(video=> { %>
+            <tr>
+                <td>
+                    <%= video.title %>
+                </td>
+                <td><img src="<%= video.poster %>" alt="Poster" width="100"></td>
+                <td>
+                    <%= video.views %>
+                </td>
+                <td>
+                    <%= video.description %>
+                </td>
+                <td>
+                    <%= video.active ? 'Hoạt động' : 'Không hoạt động' %>
+                </td>
+                <td>
+                    <%= video.categoryId ? video.categoryId.categoryName : 'Không có' %>
+                </td>
+            </tr>
+            <% }); %>
+    </table>
+</body>
+
+</html>

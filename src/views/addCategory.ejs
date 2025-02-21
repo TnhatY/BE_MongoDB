@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Danh Mục</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        form {
+            max-width: 400px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 10px;
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Thêm Danh Mục</h2>
+    <form action="/save" method="POST" enctype="multipart/form-data">
+        <label for="categoryName">Tên danh mục:</label>
+        <input type="text" id="categoryName" name="categoryName">
+
+        <label for="categoryCode">Mã danh mục:</label>
+        <input type="text" id="categoryCode" name="categoryCode">
+
+        <label for="images">Ảnh danh mục:</label>
+        <input type="file" id="images" name="images" accept="image/*">
+
+        <label for="status">Trạng thái:</label>
+        <select id="status" name="status">
+            <option value="true">Hoạt động</option>
+            <option value="false">Không hoạt động</option>
+        </select>
+
+        <button type="submit">Thêm danh mục</button>
+    </form>
+
+</body>
+
+</html>

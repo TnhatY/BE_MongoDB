@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Register</title>
+    <link rel="stylesheet" href="./css/login.css">
+</head>
+
+<body>
+    <% if (error && error.trim() !=="" ) { %>
+        <p style="color: red;">
+            <%= error %>
+        </p>
+        <% } %>
+
+
+
+            <form action="/login2" method="post">
+                <div class="container" id="login-container">
+                    <h2>Login</h2>
+                    <input type="text" placeholder="Email" name="email" required>
+                    <input type="password" placeholder="Password" name="passWord" required>
+                    <button type="submit">Login</button>
+                    <a href="#" onclick="toggleForm()">Don't have an account? Register</a>
+                </div>
+            </form>
+            <form action="/register" method="post">
+                <div class="container" id="register-container" style="display: none;">
+                    <h2>Register</h2>
+                    <input type="text" placeholder="FirstName" name="firstName" required>
+                    <input type="text" placeholder="LastName" name="lastName" required>
+                    <input type="email" placeholder="Email" name="email" required>
+                    <input type="password" placeholder="Password" name="passWord" required>
+                    <button type="submit">Register</button>
+                    <a href="#" onclick="toggleForm()">Already have an account? Login</a>
+                </div>
+            </form>
+
+
+            <script>
+                function toggleForm() {
+                    let loginContainer = document.getElementById("login-container");
+                    let registerContainer = document.getElementById("register-container");
+
+                    if (loginContainer.style.display === "none") {
+                        loginContainer.style.display = "block";
+                        registerContainer.style.display = "none";
+                    } else {
+                        loginContainer.style.display = "none";
+                        registerContainer.style.display = "block";
+                    }
+                }
+            </script>
+</body>
+
+</html>

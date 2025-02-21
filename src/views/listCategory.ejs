@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Danh Mục</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Danh Sách Danh Mục</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên danh mục</th>
+                <th>Mã danh mục</th>
+                <th>Ảnh</th>
+                <th>Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% categories.forEach(function(category) { %>
+                <tr>
+                    <td>
+                        <%= category._id %>
+                    </td>
+                    <td>
+                        <%= category.categoryName %>
+                    </td>
+                    <td>
+                        <%= category.categoryCode %>
+                    </td>
+                    <td><img src="<%= category.images %>" width="50" height="50" alt="Ảnh"></td>
+                    <td>
+                        <%= category.status ? "Hoạt động" : "Không hoạt động" %>
+                    </td>
+                </tr>
+                <% }) %>
+        </tbody>
+    </table>
+</body>
+
+</html>
