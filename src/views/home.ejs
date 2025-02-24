@@ -76,6 +76,11 @@
         </tbody>
 
     </table>
+    <form action="/logout" method="post">
+        <input type="text" value="<%=refreshToken%>" name="refreshToken">
+        <button type="submit">logout</button>
+    </form>
+
 </body>
 
 </html>

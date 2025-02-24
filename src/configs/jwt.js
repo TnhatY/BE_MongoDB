@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import createError from 'http-errors'
-
+import client from './connection_redis.js'
 
 export const signAccessToken = async (userId) => {
     return new Promise((resolve, reject) => {
@@ -18,7 +18,7 @@ export const signAccessToken = async (userId) => {
     })
 }
 
-export const verifyAccessToken = (req, res, next) => {
+export const verifyAccessToken = (refreshToken) => {
     if (!req.headers['authorization']) {
         return next(createError.Unauthorized())
     }
@@ -35,17 +35,38 @@ export const verifyAccessToken = (req, res, next) => {
 }
 
 export const signRefreshToken = async (userId) => {
-    return new Promise((resolve, reject) => {
-        const payload = {
-            userId
-        }
-        const secret = process.env.REFRESH_TOKEN_SECRET;
-        const options = {
-            expiresIn: '1y'
-        }
-        jwt.sign(payload, secret, options, (error, token) => {
-            if (error) reject(error)
-            resolve(token)
-        })
-    })
-}
+    const payload = { userId };
+    const secret = process.env.REFRESH_TOKEN_SECRET;
+
+    if (!secret) {
+        throw new Error('Missing REFRESH_TOKEN_SECRET');
+    }
+
+    try {
+        const token = jwt.sign(payload, secret, { expiresIn: '1y' });
+        await client.setEx(userId.toString(), 365 * 24 * 60 * 60, token);
+        return token;
+    } catch (error) {
+        throw new Error('Internal Server Error');
+    }
+};
+
+export const verifyRefreshToken = async (refreshToken) => {
+    if (!refreshToken) throw createError.BadRequest("Refresh token is required");
+
+    // Xác thực refreshToken bằng JWT
+    const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const { userId } = payload;
+
+    // Lấy token từ Redis
+    const storedToken = await client.get(userId);
+
+    if (!storedToken) {
+        return next(createError.Unauthorized("Refresh token not found"));
+    }
+
+    if (refreshToken !== storedToken) {
+        return next(createError.Unauthorized("Refresh token mismatch"));
+    }
+    return userId;
+};

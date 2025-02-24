@@ -1,12 +1,15 @@
+import client from "../configs/connection_redis.js";
 import { connectToDB } from "../configs/db.js";
-import { signAccessToken, signRefreshToken } from "../configs/jwt.js";
+import { signAccessToken, signRefreshToken, verifyAccessToken, verifyRefreshToken } from "../configs/jwt.js";
 import User from "../models/user.js"
 import { addUser, getUser, checkLogin, updateUser, deleteUser } from "../services/userService.js";
+import jwt from 'jsonwebtoken';
+import createError from 'http-errors';
 
 export const getHome = async (req, res) => {
     try {
         const listUser = await User.find();
-        res.render('home.ejs', { listUser: listUser });
+        res.render('home.ejs', { listUser: listUser, refreshToken: "" });
     } catch (error) {
         console.error(" Error fetching users:", error);
         res.status(500).send("Lỗi lấy danh sách user");
@@ -54,11 +57,30 @@ export const postLogin = async (req, res, next) => {
     const user = await User.findOne({ email })
     const accToken = await signAccessToken(user._id)
     const refreshToken = await signRefreshToken(user._id)
-    console.log(accToken)
-    console.log(refreshToken)
-    next()
+    // console.log(accToken)
+    //console.log(refreshToken)
+    const listUser = await User.find();
+    res.render('home.ejs', { listUser: listUser, refreshToken: refreshToken });
 
 }
+
+export const logOut = async (req, res, next) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            throw createError.BadRequest("Refresh token is required");
+        }
+
+        const userId = await verifyRefreshToken(refreshToken);
+        // Xóa refresh token trong Redis
+        await client.del(userId);
+
+        return res.json({ message: "Logged out successfully" });
+    } catch (error) {
+        next(error);
+    }
+};
+
 
 export const deleteUserC = async (req, res, next) => {
     const userId = req.params.id;
