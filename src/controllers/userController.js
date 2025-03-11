@@ -1,15 +1,19 @@
 import client from "../configs/connection_redis.js";
 import { connectToDB } from "../configs/db.js";
-import { signAccessToken, signRefreshToken, verifyAccessToken, verifyRefreshToken } from "../configs/jwt.js";
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../configs/jwt.js";
 import User from "../models/user.js"
 import { addUser, getUser, checkLogin, updateUser, deleteUser } from "../services/userService.js";
 import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
 
+import cookie from "cookie";
+import passport from "passport";
+
 export const getHome = async (req, res) => {
     try {
         const listUser = await User.find();
-        res.render('home.ejs', { listUser: listUser, refreshToken: "" });
+        //res.render('home.ejs', { listUser: listUser, refreshToken: "" });
+        res.json({ listUser })
     } catch (error) {
         console.error(" Error fetching users:", error);
         res.status(500).send("Lỗi lấy danh sách user");
@@ -26,8 +30,11 @@ export const postRegister = async (req, res) => {
         res.send('lỗi');
         return
     }
-    const listUser = await User.find(); // Lấy tất cả user từ MongoDB
-    res.render('home.ejs', { listUser: listUser });
+
+    return res.json({
+        status: true,
+        message: "Register success!!"
+    })
 }
 
 export const getEditUser = async (req, res) => {
@@ -48,36 +55,61 @@ export const getLogin = (req, res) => {
 
 
 export const postLogin = async (req, res, next) => {
-    const password = req.body.passWord
-    const email = req.body.email
-    const result = await checkLogin(email, password)
-    if (result !== true) {
-        return res.render('login.ejs', { error: result })
-    }
-    const user = await User.findOne({ email })
-    const accToken = await signAccessToken(user._id)
-    const refreshToken = await signRefreshToken(user._id)
-    // console.log(accToken)
-    //console.log(refreshToken)
-    const listUser = await User.find();
-    res.render('home.ejs', { listUser: listUser, refreshToken: refreshToken });
+    try {
+        const { email, passWord } = req.body;
+        const result = await checkLogin(email, passWord);
+        if (result !== true) {
+            return res.status(401).json({ success: false, message: "Invalid credentials" });
+        }
 
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const accToken = await signAccessToken(user._id, user?.role);
+        const refreshToken = await signRefreshToken(user._id);
+
+        res.setHeader("Set-Cookie", [
+            cookie.serialize("accessToken", accToken, { httpOnly: true, secure: false, path: "/" }),
+            cookie.serialize("refreshToken", refreshToken, { httpOnly: true, secure: false, path: "/" })
+        ]);
+
+        res.status(200).json({
+            success: true,
+            message: "Login successful",
+            accessToken: accToken,
+            refreshToken: refreshToken,
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
 export const logOut = async (req, res, next) => {
     try {
-        const { refreshToken } = req.body;
+        const refreshToken = req.cookies.refreshToken;
+        // const { refreshToken } = req.body;
         if (!refreshToken) {
-            throw createError.BadRequest("Refresh token is required");
+            res.json({ status: false })
         }
 
         const userId = await verifyRefreshToken(refreshToken);
         // Xóa refresh token trong Redis
         await client.del(userId);
+        // Xóa cookie chứa refreshToken
+        res.setHeader("Set-Cookie", [
+            cookie.serialize("accessToken", "", { httpOnly: true, secure: false, path: "/", expires: new Date(0) }),
+            cookie.serialize("refreshToken", "", { httpOnly: true, secure: false, path: "/", expires: new Date(0) })
+        ]);
 
-        return res.json({ message: "Logged out successfully" });
+        //console.log(accessToken)
+        res.json({
+            status: true,
+            message: "Logout success"
+        })
     } catch (error) {
-        next(error);
+        console.log(error);
     }
 };
 
@@ -87,3 +119,59 @@ export const deleteUserC = async (req, res, next) => {
     await deleteUser(userId);
     next();
 }
+
+
+export const getUserProfile = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.userId)
+        res.json(user);
+        //res.json({})
+        //console.log(user)
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const getLoginWithGoogle = async (req, res, next) => {
+    passport.authenticate('google', (err, data) => {
+
+        // Lưu token vào cookie
+        res.setHeader("Set-Cookie", [
+            cookie.serialize("accessToken", data.accToken, { httpOnly: true, secure: false, path: "/" }),
+            cookie.serialize("refreshToken", data.refToken, { httpOnly: true, secure: false, path: "/" })
+        ]);
+
+        res.redirect("http://localhost:3000"); // Chuyển hướng về frontend
+    })(req, res, next);
+}
+
+
+export const refreshToken = async (req, res, next) => {
+    try {
+        const cookies = req.cookies;
+        const refreshToken = cookies.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(401).json({ message: "No refresh token provided" });
+        }
+
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, payload) => {
+            if (err) {
+                return res.status(403).json({ message: "Invalid refresh token" });
+            }
+
+            // Tạo token mới
+            const newAccessToken = jwt.sign({ userId: payload.userId, role: payload.role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+
+            res.setHeader("Set-Cookie", [
+                cookie.serialize("accessToken", newAccessToken, { httpOnly: true, secure: false, path: "/" }),
+                // cookie.serialize("refreshToken", data.refToken, { httpOnly: true, secure: false, path: "/" })
+            ]);
+
+            res.status(200).json({ message: "Token refreshed successfully" });
+        });
+    } catch (error) {
+        next(error);
+    }
+};

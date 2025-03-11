@@ -1,30 +1,29 @@
 import { Router } from 'express'
-import { getHome, getCreateUser, postRegister, getEditUser, getLogin, postLogin, postEditUser, deleteUserC, logOut } from '../controllers/userController.js'
-import { verifyAccessToken } from '../configs/jwt.js'
+import {
+    getHome, getCreateUser, postRegister, getEditUser, getLogin, postLogin, postEditUser, deleteUserC,
+    logOut, getUserProfile, getLoginWithGoogle,
+    refreshToken
+} from '../controllers/userController.js'
+import { verifyAccessToken } from '../middlewares/authMiddleware.js';
+import passport from 'passport';
+import cookie from "cookie";
+import { checkRole } from '../middlewares/checkRoleMiddleware.js';
 
 const userRoute = Router()
 
-userRoute.get('/', getHome)
-userRoute.get('/create-user', getCreateUser)
+userRoute.get('/', verifyAccessToken, checkRole("Admin"), getHome)
+userRoute.get('/create-user', verifyAccessToken, getCreateUser)
 userRoute.post('/register', postRegister)
 userRoute.get('/edit/:id', getEditUser)
-userRoute.get('/login', getLogin)
-userRoute.post('/login2', postLogin)
+//userRoute.get('/login', getLogin)
+userRoute.post('/login', postLogin)
 userRoute.post('/update', postEditUser, getHome)
 userRoute.get('/delete/:id', deleteUserC, getHome)
-userRoute.post('/logout', logOut, getHome)
+userRoute.post('/logout', logOut)
+userRoute.get('/profile', verifyAccessToken, getUserProfile);
+userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+userRoute.get('/auth/google/callback', getLoginWithGoogle);
+userRoute.post('/auth/refresh', refreshToken)
 
-userRoute.get('/getlists', verifyAccessToken, (req, res, next) => {
-    const listUser = [
-        {
-            email: 'a@gmail.com'
-        },
-        {
-            email: 'b@gmail.com'
-        }]
-    res.json({
-        listUser
-    })
-})
 
 export default userRoute

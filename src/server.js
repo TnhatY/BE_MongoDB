@@ -5,23 +5,32 @@ import userRouter from './routes/userRoute.js'
 import { connectToDB } from './configs/db.js';
 import './configs/connection_redis.js';
 import categoryRoute from './routes/categoryRoute.js';
-import multer from "multer";
 import videoRoute from './routes/videoRoute.js';
+import cors from "cors";
 //import passport from 'passport';
-//import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-
-
+import passport from './configs/passport.js';
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import cookieParser from "cookie-parser";
+import cookieSession from "cookie-session";
+import session from "express-session";
 const port = process.env.PORT || 2610
 
 const app = express()
-
-//passport.use(new GoogleStrategy());
-
-
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cookieParser());
 //config req.body
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+app.use(
+    session({
+        secret: process.env.COOKIE_SECRET, // Thay bằng một chuỗi bảo mật
+        resave: false,
+        saveUninitialized: false
+    })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 //khai bao route
 app.use(userRouter);
@@ -29,6 +38,15 @@ app.use(categoryRoute);
 app.use(videoRoute);
 //config template engine
 configViewEngine(app);
+
+//cookie
+// app.use(
+//     cookieSession({
+//         maxAge: 30 * 24 * 60 * 60 * 1000,
+//         keys: [process.env.COOKIE_SECRET]
+//     })
+// );
+
 
 const START_SERVER = async () => {
     await connectToDB();

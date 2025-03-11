@@ -2,11 +2,11 @@ import jwt from 'jsonwebtoken'
 import createError from 'http-errors'
 import client from './connection_redis.js'
 
-export const signAccessToken = async (userId) => {
+export const signAccessToken = async (userId, role) => {
     return new Promise((resolve, reject) => {
         const payload = {
-            userId
-        }
+            userId, role
+        };
         const secret = process.env.ACCESS_TOKEN_SECRET;
         const options = {
             expiresIn: '1h'
@@ -18,24 +18,24 @@ export const signAccessToken = async (userId) => {
     })
 }
 
-export const verifyAccessToken = (refreshToken) => {
-    if (!req.headers['authorization']) {
-        return next(createError.Unauthorized())
-    }
-    const authHeader = req.headers['authorization'];
-    const bearerToken = authHeader.split(' ');
-    const token = bearerToken[1];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
-        if (err) {
-            return next(createError.Unauthorized());
-        }
-        req.payload = payload
-        next();
-    })
-}
+// export const verifyAccessToken = (refreshToken) => {
+//     if (!req.headers['authorization']) {
+//         return next(createError.Unauthorized())
+//     }
+//     const authHeader = req.headers['authorization'];
+//     const bearerToken = authHeader.split(' ');
+//     const token = bearerToken[1];
+//     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
+//         if (err) {
+//             return next(createError.Unauthorized());
+//         }
+//         req.payload = payload
+//         next();
+//     })
+// }
 
-export const signRefreshToken = async (userId) => {
-    const payload = { userId };
+export const signRefreshToken = async (userId, role) => {
+    const payload = { userId, role };
     const secret = process.env.REFRESH_TOKEN_SECRET;
 
     if (!secret) {
@@ -62,11 +62,11 @@ export const verifyRefreshToken = async (refreshToken) => {
     const storedToken = await client.get(userId);
 
     if (!storedToken) {
-        return next(createError.Unauthorized("Refresh token not found"));
+        throw createError.Unauthorized("Refresh token not found");
     }
 
     if (refreshToken !== storedToken) {
-        return next(createError.Unauthorized("Refresh token mismatch"));
+        throw createError.Unauthorized("Refresh token mismatch");
     }
     return userId;
 };
