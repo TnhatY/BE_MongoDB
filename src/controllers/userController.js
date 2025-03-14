@@ -71,8 +71,8 @@ export const postLogin = async (req, res, next) => {
         const refreshToken = await signRefreshToken(user._id);
 
         res.setHeader("Set-Cookie", [
-            cookie.serialize("accessToken", accToken, { httpOnly: true, secure: false, path: "/" }),
-            cookie.serialize("refreshToken", refreshToken, { httpOnly: true, secure: false, path: "/" })
+            cookie.serialize("accessToken", accToken, { httpOnly: true, secure: true, path: "/" }),
+            cookie.serialize("refreshToken", refreshToken, { httpOnly: true, secure: true, path: "/" })
         ]);
 
         res.status(200).json({
@@ -99,8 +99,8 @@ export const logOut = async (req, res, next) => {
         await client.del(userId);
         // Xóa cookie chứa refreshToken
         res.setHeader("Set-Cookie", [
-            cookie.serialize("accessToken", "", { httpOnly: true, secure: false, path: "/", expires: new Date(0) }),
-            cookie.serialize("refreshToken", "", { httpOnly: true, secure: false, path: "/", expires: new Date(0) })
+            cookie.serialize("accessToken", "", { httpOnly: true, secure: true, path: "/", expires: new Date(0) }),
+            cookie.serialize("refreshToken", "", { httpOnly: true, secure: true, path: "/", expires: new Date(0) })
         ]);
 
         //console.log(accessToken)
@@ -138,11 +138,11 @@ export const getLoginWithGoogle = async (req, res, next) => {
 
         // Lưu token vào cookie
         res.setHeader("Set-Cookie", [
-            cookie.serialize("accessToken", data.accToken, { httpOnly: true, secure: false, path: "/" }),
-            cookie.serialize("refreshToken", data.refToken, { httpOnly: true, secure: false, path: "/" })
+            cookie.serialize("accessToken", data.accToken, { httpOnly: true, secure: true, path: "/" }),
+            cookie.serialize("refreshToken", data.refToken, { httpOnly: true, secure: true, path: "/" })
         ]);
 
-        res.redirect("http://fe-react-cche.vercel.app"); // Chuyển hướng về frontend
+        res.redirect("https://fe-react-pied.vercel.app"); // Chuyển hướng về frontend
     })(req, res, next);
 }
 
@@ -165,7 +165,7 @@ export const refreshToken = async (req, res, next) => {
             const newAccessToken = jwt.sign({ userId: payload.userId, role: payload.role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
 
             res.setHeader("Set-Cookie", [
-                cookie.serialize("accessToken", newAccessToken, { httpOnly: true, secure: false, path: "/" }),
+                cookie.serialize("accessToken", newAccessToken, { httpOnly: true, secure: true, path: "/" }),
                 // cookie.serialize("refreshToken", data.refToken, { httpOnly: true, secure: false, path: "/" })
             ]);
 
