@@ -142,7 +142,7 @@ export const getLoginWithGoogle = async (req, res, next) => {
             cookie.serialize("refreshToken", data.refToken, { httpOnly: true, secure: false, path: "/" })
         ]);
 
-        res.redirect("http://localhost:3000"); // Chuyển hướng về frontend
+        res.redirect("http://fe-react-cche.vercel.app"); // Chuyển hướng về frontend
     })(req, res, next);
 }
 

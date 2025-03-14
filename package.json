@@ -24,7 +24,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --env-file .env ./src/server.js"
+    "dev": "nodemon --env-file .env ./src/server.js",
+    "start": "nodemon --env-file .env ./src/server.js"
   },
   "author": "",
   "license": "ISC",
