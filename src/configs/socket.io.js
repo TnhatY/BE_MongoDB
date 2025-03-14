@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import Message from "../models/message.js";
-import { verifyRefreshToken } from "./jwt";
+import { verifyRefreshToken } from "./jwt.js";
 import cookie from "cookie";
 
 const onlineUsers = {};
