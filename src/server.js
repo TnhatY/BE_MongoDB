@@ -13,14 +13,19 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
 import cookieSession from "cookie-session";
 import session from "express-session";
+import Message from './models/message.js';
+import handleSocket from './configs/socket.io.js';
+
 const port = process.env.PORT || 2610
 
 const app = express()
+const io = new Server(server, { cors: { origin: "*" } });
 app.use(cors({ origin: "https://fe-react-pied.vercel.app", credentials: true }));
 app.use(cookieParser());
 //config req.body
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
 
 app.use(
     session({
@@ -46,6 +51,9 @@ configViewEngine(app);
 //         keys: [process.env.COOKIE_SECRET]
 //     })
 // );
+
+
+handleSocket(io);
 
 
 const START_SERVER = async () => {
