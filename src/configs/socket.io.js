@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Message from "../models/message";
+import Message from "../models/message.js";
 import { verifyRefreshToken } from "./jwt";
 import cookie from "cookie";
 
