@@ -8,7 +8,7 @@ passport.use(
         {
             clientID: process.env.GG_CLIENT_ID,
             clientSecret: process.env.GG_CLIENT_SECRET,
-            callbackURL: "http://localhost:8089/auth/google/callback",
+            callbackURL: "https://be-mongodb.onrender.com/auth/google/callback",
             prompt: "select_account"
         },
         async (accessToken, refreshToken, profile, done) => { // Thêm accessToken và refreshToken
