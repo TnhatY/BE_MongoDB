@@ -16,7 +16,7 @@ import session from "express-session";
 const port = process.env.PORT || 2610
 
 const app = express()
-app.use(cors({ origin: ["http://localhost:3000", "https://fe-react-x.vercel.app"], credentials: true }));
+app.use(cors({ origin: ["http://localhost:3000", "https://fe-react-pied.vercel.app"], credentials: true }));
 app.use(cookieParser());
 //config req.body
 app.use(express.json())
