@@ -9,37 +9,35 @@ const handleSocket = (io) => {
     io.on("connection", (socket) => {
         console.log("User connected:", socket.id);
 
-        // **Xác thực JWT khi client gửi token**
-        socket.on("authenticate", () => {
-            try {
-                // Lấy cookie từ request headers
-                const cookies = cookie.parse(req.headers.cookie || '');
-                const token = cookies.accessToken;
-                const refreshToken = cookies.refreshToken;
+        try {
+            // Lấy cookie từ socket handshake
+            const cookies = cookie.parse(socket.handshake.headers.cookie || '');
+            const token = cookies.accessToken;
 
-                if (!token) throw new Error("No token found");
+            if (!token) throw new Error("No token found");
 
-                const decoded = verifyRefreshToken(token);
-                onlineUsers[decoded.userId] = socket.id;
-                console.log("User authenticated:", decoded.userId);
-            } catch (err) {
-                console.log("Authentication failed:", err);
-                socket.emit("auth_error", "Invalid token");
-            }
-        });
+            // Xác thực token & lấy userId
+            const decoded = verifyRefreshToken(token);
+            const userId = decoded.userId;
+            onlineUsers[userId] = socket.id;
+            socket.userId = userId; // Lưu userId vào socket để dùng sau
+
+            console.log("User authenticated:", userId);
+        } catch (err) {
+            console.log("Authentication failed:", err);
+            socket.emit("auth_error", "Invalid token");
+            return socket.disconnect(); // Ngắt kết nối nếu xác thực thất bại
+        }
 
         // **Xử lý gửi tin nhắn riêng tư**
         socket.on("private message", async ({ to, message }) => {
             try {
-                // Lấy token từ cookie
-                const cookies = cookie.parse(req.headers.cookie || '');
-                const token = cookies.accessToken;
-                if (!token) throw new Error("No token found");
+                if (!socket.userId) throw new Error("User not authenticated");
 
-                const decoded = verifyRefreshToken(token);
-                const sender = decoded.userId;
+                const sender = socket.userId;
                 const receiverSocketId = onlineUsers[to];
 
+                // Lưu tin nhắn vào MongoDB
                 const newMessage = new Message({ sender, receiver: to, message });
                 await newMessage.save();
 
@@ -54,14 +52,10 @@ const handleSocket = (io) => {
             }
         });
 
-
         // **Xóa user khi disconnect**
         socket.on("disconnect", () => {
-            for (let user in onlineUsers) {
-                if (onlineUsers[user] === socket.id) {
-                    delete onlineUsers[user];
-                    break;
-                }
+            if (socket.userId) {
+                delete onlineUsers[socket.userId];
             }
             console.log("User disconnected:", socket.id);
         });

@@ -7,19 +7,23 @@ import './configs/connection_redis.js';
 import categoryRoute from './routes/categoryRoute.js';
 import videoRoute from './routes/videoRoute.js';
 import cors from "cors";
-//import passport from 'passport';
 import passport from './configs/passport.js';
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
-import cookieSession from "cookie-session";
 import session from "express-session";
-import Message from './models/message.js';
 import handleSocket from './configs/socket.io.js';
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 const port = process.env.PORT || 2610
 
 const app = express()
-const io = new Server(server, { cors: { origin: "*" } });
+const server = createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "https://fe-react-pied.vercel.app", // Frontend
+        credentials: true,
+    }
+});
 app.use(cors({ origin: "https://fe-react-pied.vercel.app", credentials: true }));
 app.use(cookieParser());
 //config req.body
