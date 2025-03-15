@@ -31,13 +31,13 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 
-app.use(
-    session({
-        secret: process.env.COOKIE_SECRET, // Thay bằng một chuỗi bảo mật
-        resave: false,
-        saveUninitialized: false
-    })
-);
+// app.use(
+//     session({
+//         secret: process.env.COOKIE_SECRET, // Thay bằng một chuỗi bảo mật
+//         resave: false,
+//         saveUninitialized: false
+//     })
+// );
 app.use(passport.initialize());
 app.use(passport.session());
 

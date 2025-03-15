@@ -1,7 +1,7 @@
+import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import Message from "../models/message.js";
-import { verifyRefreshToken } from "./jwt.js";
-import cookie from "cookie";
+import { verifyAccessToken } from "./jwt.js"; // Middleware để verify JWT
 
 const onlineUsers = {};
 
@@ -10,44 +10,48 @@ const handleSocket = (io) => {
         console.log("User connected:", socket.id);
 
         try {
-            // Lấy cookie từ socket handshake
+            // **Lấy token từ cookie của request**
             const cookies = cookie.parse(socket.handshake.headers.cookie || '');
-            const token = cookies.accessToken;
+            const token = cookies.accessToken; // Token được gửi qua cookie HttpOnly
 
             if (!token) throw new Error("No token found");
 
-            // Xác thực token & lấy userId
-            const decoded = verifyRefreshToken(token);
+            // **Xác thực token & lấy userId**
+            const decoded = verifyAccessToken(token);
             const userId = decoded.userId;
             onlineUsers[userId] = socket.id;
-            socket.userId = userId; // Lưu userId vào socket để dùng sau
+            socket.userId = userId; // Lưu userId vào socket
 
-            console.log("User authenticated:", userId);
+            console.log(`User authenticated: ${userId}`);
         } catch (err) {
-            console.log("Authentication failed:", err);
+            console.log("Authentication failed:", err.message);
             socket.emit("auth_error", "Invalid token");
             return socket.disconnect(); // Ngắt kết nối nếu xác thực thất bại
         }
 
+        // **Gửi danh sách user online**
+        io.emit("updateUserList", Object.keys(onlineUsers));
+
         // **Xử lý gửi tin nhắn riêng tư**
-        socket.on("private message", async ({ to, message }) => {
+        socket.on("privateMessage", async ({ to, message }) => {
             try {
                 if (!socket.userId) throw new Error("User not authenticated");
 
-                const sender = socket.userId;
+                const senderId = socket.userId;
                 const receiverSocketId = onlineUsers[to];
 
                 // Lưu tin nhắn vào MongoDB
-                const newMessage = new Message({ sender, receiver: to, message });
+                const newMessage = new Message({ sender: senderId, receiver: to, message });
                 await newMessage.save();
 
+                // Gửi tin nhắn đến người nhận nếu họ đang online
                 if (receiverSocketId) {
-                    io.to(receiverSocketId).emit("private message", { from: sender, message });
+                    io.to(receiverSocketId).emit("privateMessage", { from: senderId, message });
                 } else {
-                    socket.emit("message_status", "User is offline, message saved.");
+                    socket.emit("messageStatus", "User is offline, message saved.");
                 }
             } catch (err) {
-                socket.emit("message_error", "Message send failed");
+                socket.emit("messageError", "Message send failed");
                 console.log("Message send failed:", err);
             }
         });
@@ -56,6 +60,7 @@ const handleSocket = (io) => {
         socket.on("disconnect", () => {
             if (socket.userId) {
                 delete onlineUsers[socket.userId];
+                io.emit("updateUserList", Object.keys(onlineUsers)); // Cập nhật danh sách user
             }
             console.log("User disconnected:", socket.id);
         });
