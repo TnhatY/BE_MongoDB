@@ -11,13 +11,13 @@ import passport from './configs/passport.js';
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import handleSocket from './configs/socket.io.js';
-import { createServer } from "http";
+import http from "http";
 import { Server } from "socket.io";
 
 const port = process.env.PORT || 2610
 
 const app = express()
-const server = createServer(app);
+const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: "https://fe-react-pied.vercel.app", // Frontend
@@ -62,7 +62,7 @@ handleSocket(io);
 
 const START_SERVER = async () => {
     await connectToDB();
-    app.listen(port, () => {
+    server.listen(port, () => {
         console.log(`Server running on http://localhost:${port}`)
     })
 }
