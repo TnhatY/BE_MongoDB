@@ -1,13 +1,13 @@
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import Message from "../models/message.js";
-import { verifyRefreshToken } from "./jwt.js";
+import { getUser } from "../services/userService.js";
 
 
 const onlineUsers = {};
 
 const handleSocket = async (io) => {
-    io.on("connection", (socket) => {
+    io.on("connection", async (socket) => {
         console.log("User connected:", socket.id);
 
         try {
@@ -24,6 +24,17 @@ const handleSocket = async (io) => {
             socket.userId = userId; // Lưu userId vào socket
 
             console.log(`User authenticated: ${userId}`);
+
+            // **Lấy thông tin user từ service**
+            const user = await getUser(userId);
+            if (!user) console.log("User not found");
+
+            // **Cập nhật danh sách user online**
+            io.emit("updateUserList", Object.keys(onlineUsers).map((id) => ({
+                id,
+                lastName: user.lastName,
+                avatar: user.avatar,
+            })));
         } catch (err) {
             console.log("Authentication failed:", err.message);
             socket.emit("auth_error", "Invalid token");
