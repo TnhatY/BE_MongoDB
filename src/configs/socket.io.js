@@ -1,7 +1,8 @@
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import Message from "../models/message.js";
-import { verifyAccessToken } from "./jwt.js"; // Middleware để verify JWT
+import { verifyRefreshToken } from "./jwt.js";
+
 
 const onlineUsers = {};
 
@@ -17,7 +18,7 @@ const handleSocket = (io) => {
             if (!token) throw new Error("No token found");
 
             // **Xác thực token & lấy userId**
-            const decoded = verifyAccessToken(token);
+            const decoded = verifyRefreshToken(token);
             const userId = decoded.userId;
             onlineUsers[userId] = socket.id;
             socket.userId = userId; // Lưu userId vào socket
