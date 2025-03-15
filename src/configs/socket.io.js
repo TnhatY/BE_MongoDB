@@ -18,8 +18,8 @@ const handleSocket = (io) => {
             if (!token) throw new Error("No token found");
 
             // **Xác thực token & lấy userId**
-            const decoded = verifyRefreshToken(token);
-            const userId = decoded.userId;
+            const userId = verifyRefreshToken(token);
+            // const userId = decoded.userId;
             onlineUsers[userId] = socket.id;
             socket.userId = userId; // Lưu userId vào socket
 
