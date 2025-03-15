@@ -6,7 +6,7 @@ import { verifyRefreshToken } from "./jwt.js";
 
 const onlineUsers = {};
 
-const handleSocket = (io) => {
+const handleSocket = async (io) => {
     io.on("connection", (socket) => {
         console.log("User connected:", socket.id);
 
@@ -18,8 +18,8 @@ const handleSocket = (io) => {
             if (!token) throw new Error("No token found");
 
             // **Xác thực token & lấy userId**
-            const userId = verifyRefreshToken(token);
-            // const userId = decoded.userId;
+            const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+            const userId = decoded.userId;
             onlineUsers[userId] = socket.id;
             socket.userId = userId; // Lưu userId vào socket
 
