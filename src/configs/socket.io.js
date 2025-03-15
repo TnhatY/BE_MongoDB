@@ -22,7 +22,7 @@ const handleSocket = async (io) => {
             const userId = decoded.userId;
             onlineUsers[userId] = socket.id;
             socket.userId = userId; // Lưu userId vào socket
-
+            socket.emit("authenticated", userId);
             console.log(`User authenticated: ${userId}`);
 
             // **Lấy thông tin user từ service**
