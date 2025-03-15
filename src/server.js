@@ -62,7 +62,7 @@ handleSocket(io);
 
 const START_SERVER = async () => {
     await connectToDB();
-    app.listen(port, () => {
+    server.listen(port, () => {
         console.log(`Server running on http://localhost:${port}`)
     })
 }
