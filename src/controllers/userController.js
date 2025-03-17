@@ -188,6 +188,9 @@ export const getMessage = async (res, req) => {
         if (message) {
             res.json(message)
         }
+        else {
+            res.json("ko co message")
+        }
     } catch (error) {
         res.json(error)
     }
