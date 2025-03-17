@@ -180,7 +180,7 @@ export const refreshToken = async (req, res, next) => {
 export const getMessage = async (res, req) => {
 
     try {
-        const receiveId = res.body.receiverId;
+        const receiveId = req.body.receiverId;
         const token = req.cookies.accessToken;
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const userId = decoded.userId;
