@@ -24,6 +24,6 @@ userRoute.get('/profile', verifyAccessToken, getUserProfile);
 userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 userRoute.get('/auth/google/callback', getLoginWithGoogle);
 userRoute.post('/auth/refresh', refreshToken)
-userRoute.get('/message', getMessage)
+userRoute.post('/message', getMessage)
 
 export default userRoute
