@@ -2,7 +2,7 @@ import client from "../configs/connection_redis.js";
 import { connectToDB } from "../configs/db.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../configs/jwt.js";
 import User from "../models/user.js"
-import { addUser, getUser, checkLogin, updateUser, deleteUser } from "../services/userService.js";
+import { addUser, getUser, checkLogin, updateUser, deleteUser, messageWithSendIdAndReceiveId } from "../services/userService.js";
 import jwt from 'jsonwebtoken';
 import createError from 'http-errors';
 
@@ -175,3 +175,20 @@ export const refreshToken = async (req, res, next) => {
         next(error);
     }
 };
+
+
+export const getMessage = async (res, req) => {
+
+    try {
+        const receiveId = res.body.receiverId;
+        const token = req.cookies.accessToken;
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const userId = decoded.userId;
+        let message = messageWithSendIdAndReceiveId(userId, receiveId)
+        if (message) {
+            res.json(message)
+        }
+    } catch (error) {
+        res.json(error)
+    }
+}

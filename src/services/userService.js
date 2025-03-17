@@ -1,4 +1,5 @@
 import { connectToDB } from "../configs/db.js";
+import Message from "../models/message.js";
 import User from "../models/user.js"
 import { userValidate } from "../schema/userShema.js";
 import createError from 'http-errors';
@@ -58,8 +59,8 @@ export const updateUser = async (email, firstName, lastName) => {
             { new: true }
         );
 
-        console.log(updateUser)
-        return updateUser;
+        console.log(updatedUser)
+        return updatedUser;
     } catch (error) {
 
     }
@@ -72,5 +73,20 @@ export const deleteUser = async (userId) => {
     }
     catch (error) {
         console.log("lỗi")
+    }
+}
+
+export const messageWithSendIdAndReceiveId = async (userId, receiveId) => {
+    try {
+        const messages = await Message.find({
+            $or: [
+                { sender: userId, receiver: receiveId },
+                { sender: receiveId, receiver: userId }
+            ]
+        }).sort({ timestamp: 1 });
+        return messages;
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+        throw new Error("Cannot fetch messages");
     }
 }

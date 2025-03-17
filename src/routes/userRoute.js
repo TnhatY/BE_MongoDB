@@ -2,7 +2,7 @@ import { Router } from 'express'
 import {
     getHome, getCreateUser, postRegister, getEditUser, getLogin, postLogin, postEditUser, deleteUserC,
     logOut, getUserProfile, getLoginWithGoogle,
-    refreshToken
+    refreshToken, getMessage
 } from '../controllers/userController.js'
 import { verifyAccessToken } from '../middlewares/authMiddleware.js';
 import passport from 'passport';
@@ -24,6 +24,6 @@ userRoute.get('/profile', verifyAccessToken, getUserProfile);
 userRoute.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 userRoute.get('/auth/google/callback', getLoginWithGoogle);
 userRoute.post('/auth/refresh', refreshToken)
-
+userRoute.get('/message', getMessage)
 
 export default userRoute
