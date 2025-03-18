@@ -187,7 +187,7 @@ export const postMessage = async (req, res) => {
         const userId = decoded.userId;
         let message = messageWithSendIdAndReceiveId(userId, receiveId)
         if (message) {
-            res.json(message)
+            res.json({ message, userId, receiveId })
         }
         else {
             res.json("ko co message")
