@@ -185,7 +185,7 @@ export const postMessage = async (req, res) => {
         const token = cookies.accessToken;
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const userId = decoded.userId;
-        let message = messageWithSendIdAndReceiveId(userId, receiveId)
+        const message = await messageWithSendIdAndReceiveId(userId, receiveId)
         if (message) {
             res.json({ message, userId, receiveId })
         }
