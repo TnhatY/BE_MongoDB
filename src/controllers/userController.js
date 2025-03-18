@@ -177,11 +177,12 @@ export const refreshToken = async (req, res, next) => {
 };
 
 
-export const getMessage = async (res, req) => {
+export const postMessage = async (res, req) => {
 
     try {
         const receiveId = req.body.receiverId;
-        const token = req.cookies.accessToken;
+        const cookies = req.cookies;
+        const token = cookies.accessToken;
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const userId = decoded.userId;
         let message = messageWithSendIdAndReceiveId(userId, receiveId)
