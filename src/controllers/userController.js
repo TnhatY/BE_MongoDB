@@ -177,7 +177,7 @@ export const refreshToken = async (req, res, next) => {
 };
 
 
-export const postMessage = async (res, req) => {
+export const postMessage = async (req, res) => {
 
     try {
         const receiveId = req.body.receiverId;
